@@ -134,6 +134,19 @@ Once you have the stash and the daily target, call `POST /api/tools/calculate-fi
 
   If `schedule.unallocatedBagIds` is non-empty, add a note below the table: "The following bags were not needed this week: [IDs]"
 
+  Then open the printable schedule automatically:
+
+  - **If you have shell access:** Open the report in the default browser by running:
+    ```bash
+    open {scheduleReportUrl} 2>/dev/null || xdg-open {scheduleReportUrl} 2>/dev/null || true
+    ```
+    Then tell the parent:
+    > "🖨️ I've opened your **Printable Feeding Schedule** in the browser. Use File → Print to print it or save it as a PDF."
+
+  - **If you do not have shell access:** Output:
+    > 🖨️ **[View Printable Feeding Schedule]({scheduleReportUrl})**
+    > Open this link in any browser and use File → Print to print your schedule or save it as a PDF.
+
   End with the exact text from `disclaimer` as a standalone paragraph.
 
 ---

@@ -5,7 +5,7 @@ import { GLOBAL_TOOL_DEFINITIONS } from './ai/toolDefinitions.js';
 import { checkBagSafetyTool } from './tools/checkBagSafety.js';
 import { validateStashSafetyTool } from './tools/validateStashSafety.js';
 import { calculateFifoScheduleTool } from './tools/calculateFifoSchedule.js';
-import { compileStashReport } from './domain/reportGenerator.js';
+import { compileStashReport, compileScheduleReport } from './domain/reportGenerator.js';
 
 export async function appRoutes(fastify: FastifyInstance) {
   fastify.get('/api/tools', async (_request, reply) => {
@@ -84,11 +84,28 @@ export async function appRoutes(fastify: FastifyInstance) {
   fastify.post('/api/tools/calculate-fifo-schedule', async (request, reply) => {
     try {
       const result = calculateFifoScheduleTool(request.body);
-      return reply.code(result.success ? 200 : 400).send(result);
+      if (result.success && result.schedule) {
+        const generatedAt = new Date().toISOString().split('T')[0];
+        const htmlData = compileScheduleReport(result.dailyTargetOz, result.schedule, generatedAt);
+        fs.writeFileSync(path.join(process.cwd(), 'schedule-report.html'), htmlData, 'utf-8');
+        const scheduleReportUrl = `http://${request.headers.host}/api/schedule-report`;
+        return reply.code(200).send({ ...result, scheduleReportUrl });
+      }
+      return reply.code(400).send(result);
     } catch (error: unknown) {
       fastify.log.error(error);
       return reply.code(500).send({ success: false, error: 'INTERNAL_ERROR', message: 'An unexpected error occurred.' });
     }
+  });
+
+  fastify.get('/api/schedule-report', async (_request, reply) => {
+    const filePath = path.join(process.cwd(), 'schedule-report.html');
+    if (!fs.existsSync(filePath)) {
+      return reply.code(404).send({ success: false, error: 'NOT_FOUND', message: 'No schedule report found. Call calculate-fifo-schedule first.' });
+    }
+    reply.header('Content-Type', 'text/html');
+    reply.header('Content-Disposition', 'inline; filename="milk-schedule-report.html"');
+    return reply.code(200).send(fs.readFileSync(filePath, 'utf-8'));
   });
 
   fastify.get('/api/prompt', async (_request, reply) => {
