@@ -162,6 +162,17 @@ describe('checkBagSafetyTool — input validation', () => {
 		expect(result.success).toBe(false);
 		expect(result.error).toBe('VALIDATION_FAILED');
 	});
+
+	test('a pump date in the future returns a validation failure', () => {
+		const tomorrow = new Date();
+		tomorrow.setDate(tomorrow.getDate() + 1);
+		const pumpDate = tomorrow.toISOString().split('T')[0];
+
+		const result = checkBagSafetyTool({ pumpDate, volumeInOz: 4, location: 'fridge' }) as any;
+
+		expect(result.success).toBe(false);
+		expect(result.error).toBe('VALIDATION_FAILED');
+	});
 });
 
 // ── withUrgency — urgency classification ─────────────────────────────────────

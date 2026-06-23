@@ -3,7 +3,12 @@ import { z } from 'zod';
 export const STORAGE_LOCATIONS = ['ambient', 'fridge', 'freezer', 'ultra-freezer'] as const;
 export type StorageLocation = (typeof STORAGE_LOCATIONS)[number];
 
-const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Must be YYYY-MM-DD');
+const isoDate = z.string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, 'Must be YYYY-MM-DD')
+  .refine(
+    (date) => date <= new Date().toISOString().split('T')[0],
+    'Pump date cannot be in the future',
+  );
 
 export const milkBagSchema = z.object({
   id: z.string().min(1),

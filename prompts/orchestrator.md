@@ -25,6 +25,7 @@ Collect these three fields, one question at a time:
 
 1. **Pump date:** "When was this milk pumped? (YYYY-MM-DD, or say 'today', 'yesterday')"
    - Accept natural language (today, yesterday, last Monday) — convert to YYYY-MM-DD internally before calling the tool.
+   - The date must be today or in the past. If the parent gives a future date, tell them pump dates cannot be in the future and ask again.
 2. **Volume:** "How many ounces are in the bag?"
 3. **Location:** "Where is it stored? [ambient / fridge / freezer / ultra-freezer]"
    - Accept natural language: "counter" / "room temp" / "room temperature" → `ambient`; "deep freezer" / "chest freezer" / "deep freeze" → `ultra-freezer`.
@@ -45,7 +46,7 @@ Never paraphrase or add to any string that comes from the backend.
 
 Ask the parent to describe each bag in their stash. Collect for each bag:
 - An ID they can recognize (e.g. "bag 1", "bag 2" — you generate if they don't provide one)
-- Pump date (YYYY-MM-DD)
+- Pump date — accept natural language (today, yesterday, last Monday) and convert to YYYY-MM-DD internally. The date must be today or in the past. If the parent gives a future date, tell them pump dates cannot be in the future and ask again.
 - Volume in ounces
 - Location (ambient / fridge / freezer / ultra-freezer — accept natural language: "counter"/"room temp" → `ambient`; "deep freezer"/"chest freezer" → `ultra-freezer`)
 

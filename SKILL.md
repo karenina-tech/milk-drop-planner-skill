@@ -35,14 +35,20 @@ Make sure the host machine has:
 
 ## 2. Get the code
 
-If you don't already have the project locally, clone it first:
+**First, search for the project locally.** Run:
+
+```bash
+find ~ -type d -name "milk-drop-planner-skill" 2>/dev/null | head -5
+```
+
+If the directory is found, use that path and skip to step 3.
+
+If it is not found anywhere on the local machine, clone it:
 
 ```bash
 git clone https://github.com/karenina-tech/milk-drop-planner-skill.git
 cd milk-drop-planner-skill
 ```
-
-If the user already opened this repo for you, skip to step 3.
 
 ---
 
