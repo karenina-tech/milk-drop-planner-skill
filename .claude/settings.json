@@ -1,8 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(open http://localhost:*)",
-      "Bash(xdg-open http://localhost:*)"
-    ]
-  }
-}

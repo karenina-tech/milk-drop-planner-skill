@@ -27,7 +27,3 @@ stash-report.html
 
 # User's personal stash data — filled in from stash_template.csv, never commit
 stash.csv
-
-# Local Claude context
-.claude/settings.local.json
-.claude/ARCHITECTURE.md
