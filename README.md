@@ -8,6 +8,14 @@ This tool puts CDC & AAP guidelines into an AI agent that can check any single b
 
 ---
 
+## 👨‍👩‍👧 Not a developer?
+
+If you just want to check your breast milk stash — no setup, no AI subscription, no server — use the companion web app instead:
+
+**[🍼 MilkDrop Planner](https://drop.kareninatech.com)** — open the link, fill in your bags, and get instant expiry dates and handling instructions. Free, open source, runs entirely in the browser.
+
+---
+
 ## Concept
 
 An **agent-agnostic HTTP Skill Server**. Any AI framework (LangChain, Vercel AI SDK, AutoGen, or a custom agent) can connect to it via standard HTTP and JSON Schema — no SDK, no API key required on the server side.
