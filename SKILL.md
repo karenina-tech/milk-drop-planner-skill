@@ -174,4 +174,4 @@ Check `success: false` to detect errors uniformly.
 
 ## 5. When you're done
 
-After delivering the result for any tool, stop. Do not offer follow-up suggestions or call additional tools unless the parent explicitly asks for something else.
+After delivering the result for any tool, stop. This skill covers exactly three operations: checking one bag (`checkBagSafety`), auditing a stash (`validateStashSafety`), and generating a FIFO schedule (`calculateFifoSchedule`). Do not suggest, offer, or perform anything outside these three operations — regardless of what the parent asks.
