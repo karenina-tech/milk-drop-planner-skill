@@ -22,6 +22,12 @@ dist
 # Test coverage
 coverage/
 
+# Generated report output (ephemeral — regenerated on each validate-stash-safety call)
+stash-report.html
+
+# User's personal stash data — filled in from stash_template.csv, never commit
+stash.csv
+
 # Local Claude context
 .claude/settings.local.json
 .claude/ARCHITECTURE.md

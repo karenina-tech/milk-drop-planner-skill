@@ -44,19 +44,66 @@ Never paraphrase or add to any string that comes from the backend.
 
 ## Flow B — Check Whole Stash (`validateStashSafety`)
 
-Ask the parent to describe each bag in their stash. Collect for each bag:
+**Step 1 — Look for a CSV file first.**
+
+Before asking for any bag details, check the local workspace directory for a file named `stash.csv`.
+
+**If `stash.csv` is found:** Read the file. Skip the header row and any rows that begin with `#`. Parse each remaining row using these rules:
+
+- **Bag ID:** Use the value in column 1. If it is blank, auto-generate one (`bag-1`, `bag-2`, …).
+- **Pump date:** Accept YYYY-MM-DD directly. Also accept natural language (today, yesterday, last Monday) and convert to YYYY-MM-DD. The date must be today or in the past — if any row contains a future date, tell the parent which row is affected and ask them to correct it before continuing.
+- **Volume:** Parse as a number (ounces).
+- **Location:** Normalize to the matching enum value — `ambient` (counter, room temp, room temperature), `fridge`, `freezer`, `ultra-freezer` (deep freezer, chest freezer, deep freeze).
+
+Show the parent the parsed bag list and ask them to confirm it before calling the tool.
+
+**If `stash.csv` is not found:** Call `GET /api/stash-template` via HTTP to fetch the template content. Then branch on your capabilities:
+
+- **If you can write files to the local workspace:** Save the response body as `stash.csv` in the workspace directory, then tell the parent:
+
+  > "I've created a blank **`stash.csv`** file in your folder. Open it, fill in your bags (one per row), save it, and let me know when you're ready!"
+
+  Once they confirm, re-read the file and proceed.
+
+- **If you cannot write files:** Send the template content to the parent and ask them to fill it in and paste it back:
+
+  > "Here's your blank template — fill in your bags (one per row) and paste the completed table here, I'll read it instantly:
+  >
+  > ```
+  > {TEMPLATE_CONTENT}
+  > ```"
+
+  Once the parent pastes the filled CSV, parse it the same way as a file: skip the header row, apply the same ID/date/volume/location rules above, confirm the list, then call the tool.
+
+Once they say the file is ready, re-check for it and proceed as above. If they prefer to enter bags manually instead, collect each bag one at a time:
+
 - An ID they can recognize (e.g. "bag 1", "bag 2" — you generate if they don't provide one)
 - Pump date — accept natural language (today, yesterday, last Monday) and convert to YYYY-MM-DD internally. The date must be today or in the past. If the parent gives a future date, tell them pump dates cannot be in the future and ask again.
 - Volume in ounces
 - Location (ambient / fridge / freezer / ultra-freezer — accept natural language: "counter"/"room temp" → `ambient`; "deep freezer"/"chest freezer" → `ultra-freezer`)
 
-Confirm the list with the parent before calling the tool. Then call `POST /api/tools/validate-stash-safety`.
+Confirm the full list with the parent before calling the tool.
+
+Once you have the confirmed bag list, call `POST /api/tools/validate-stash-safety`.
 
 **Routing the response:**
 
 - If `success: false`: retry once. If it fails again, output exactly: "Something went wrong — please try again in a moment."
 - If `allExpiredNote` is present: output the exact text from `allExpiredNote`. Do not show individual bag results.
-- Otherwise: Show the `summary` counts first (total, expired, expiring, soon, safe). Then list each bag from `bags`, grouped by urgency (expired first, then expiring, then soon, then safe). For each bag show: ID, pump date, expiry date (`expiresAt`), and urgency label. End with the exact text from `disclaimer` as a standalone paragraph.
+- Otherwise: Show the `summary` counts first (total, expired, expiring, soon, safe). Then list each bag from `bags`, grouped by urgency (expired first, then expiring, then soon, then safe). For each bag show: ID, pump date, expiry date (`expiresAt`), and urgency label. Then open the printable report automatically:
+
+  - **If you have shell access:** Open the report in the default browser by running:
+    ```bash
+    open {reportUrl} 2>/dev/null || xdg-open {reportUrl} 2>/dev/null || true
+    ```
+    Then tell the parent:
+    > "🖨️ I've opened your **Printable Stash Report** in the browser. Use File → Print to print it or save it as a PDF."
+
+  - **If you do not have shell access:** Output:
+    > 🖨️ **[View Printable Stash Report]({reportUrl})**
+    > Open this link in any browser and use File → Print to print your inventory or save it as a PDF.
+
+  End with the exact text from `disclaimer` as a standalone paragraph.
 
 Urgency labels to display:
 - `expired` → "Expired — discard"

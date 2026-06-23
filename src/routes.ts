@@ -5,6 +5,7 @@ import { GLOBAL_TOOL_DEFINITIONS } from './ai/toolDefinitions.js';
 import { checkBagSafetyTool } from './tools/checkBagSafety.js';
 import { validateStashSafetyTool } from './tools/validateStashSafety.js';
 import { calculateFifoScheduleTool } from './tools/calculateFifoSchedule.js';
+import { compileStashReport } from './domain/reportGenerator.js';
 
 export async function appRoutes(fastify: FastifyInstance) {
   fastify.get('/api/tools', async (_request, reply) => {
@@ -46,11 +47,38 @@ export async function appRoutes(fastify: FastifyInstance) {
   fastify.post('/api/tools/validate-stash-safety', async (request, reply) => {
     try {
       const result = validateStashSafetyTool(request.body);
-      return reply.code(result.success ? 200 : 400).send(result);
+      if (result.success && result.bags) {
+        const generatedAt = new Date().toISOString().split('T')[0];
+        const htmlData = compileStashReport(result.bags, generatedAt);
+        fs.writeFileSync(path.join(process.cwd(), 'stash-report.html'), htmlData, 'utf-8');
+        const reportUrl = `http://${request.headers.host}/api/stash-report`;
+        return reply.code(200).send({ ...result, reportUrl });
+      }
+      return reply.code(400).send(result);
     } catch (error: unknown) {
       fastify.log.error(error);
       return reply.code(500).send({ success: false, error: 'INTERNAL_ERROR', message: 'An unexpected error occurred.' });
     }
+  });
+
+  fastify.get('/api/stash-template', async (_request, reply) => {
+    const filePath = path.join(process.cwd(), 'templates', 'stash_template.csv');
+    if (!fs.existsSync(filePath)) {
+      return reply.code(404).send({ success: false, error: 'NOT_FOUND', message: 'Template file not found.' });
+    }
+    reply.header('Content-Type', 'text/csv');
+    reply.header('Content-Disposition', 'attachment; filename="stash_template.csv"');
+    return reply.code(200).send(fs.readFileSync(filePath, 'utf-8'));
+  });
+
+  fastify.get('/api/stash-report', async (_request, reply) => {
+    const filePath = path.join(process.cwd(), 'stash-report.html');
+    if (!fs.existsSync(filePath)) {
+      return reply.code(404).send({ success: false, error: 'NOT_FOUND', message: 'No stash report found. Call validate-stash-safety first.' });
+    }
+    reply.header('Content-Type', 'text/html');
+    reply.header('Content-Disposition', 'inline; filename="milk-stash-report.html"');
+    return reply.code(200).send(fs.readFileSync(filePath, 'utf-8'));
   });
 
   fastify.post('/api/tools/calculate-fifo-schedule', async (request, reply) => {
