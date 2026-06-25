@@ -86,7 +86,7 @@ export async function appRoutes(fastify: FastifyInstance) {
       const result = calculateFifoScheduleTool(request.body);
       if (result.success && result.schedule) {
         const generatedAt = new Date().toISOString().split('T')[0];
-        const htmlData = compileScheduleReport(result.dailyTargetOz, result.schedule, generatedAt);
+        const htmlData = compileScheduleReport(result.dailyTargetOz, result.stash, result.schedule, generatedAt);
         fs.writeFileSync(path.join(process.cwd(), 'schedule-report.html'), htmlData, 'utf-8');
         const scheduleReportUrl = `http://${request.headers.host}/api/schedule-report`;
         return reply.code(200).send({ ...result, scheduleReportUrl });

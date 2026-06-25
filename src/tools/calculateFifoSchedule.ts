@@ -14,6 +14,7 @@ export function calculateFifoScheduleTool(input: unknown) {
   return {
     success: true,
     dailyTargetOz,
+    stash,
     schedule,
     disclaimer: TOOL_MESSAGES.DISCLAIMER,
   };
